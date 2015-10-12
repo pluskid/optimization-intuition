@@ -243,9 +243,9 @@ It then implies
 which proved Theorem~\ref{thm:projected-subgradient-descent} for the case of unconstrained
 optimization ($\sK=\RR^n$).
 
-\subsection{Choosing Stepsizes}
+\subsection{Choosing Step Sizes}
 
-Note \eqref{eq:proj-subgrad-bound} holds for any choices of stepsizes $\eta_t$ (though some of them
+Note \eqref{eq:proj-subgrad-bound} holds for any choices of step sizes $\eta_t$ (though some of them
 will give completely trivial bounds). So we could actually optimize the right hand side to get an
 ``optimal'' bound. To make the problem easier, we choose a fixed stepsize $\eta_t=\eta$ for
 $t=0,\ldots,T-1$. So the right hand side becomes
@@ -260,7 +260,7 @@ where the inequality holds with equality when
 Note the choice of step size depends on several factors:
 \begin{description}
   \item[$G$:] As we described in Section~\ref{sec:subgrad-descent-assumption}, large $G$ will force
-  us to be careful and move with small stepsizes. Our intuition is consistent here.
+  us to be careful and move with small step sizes. Our intuition is consistent here.
   \item[$R$:] In our analysis, we only use $R$ to bound $\|x^0-x^*\|$. When $R$ is large, we want to
   use large step size, otherwise we might never reach the optimal in the given time budget $T$.
   Generally when $x^*$ is unknown, $R$ can be bounded by the size of $\sK$ for the case
@@ -270,9 +270,9 @@ Note the choice of step size depends on several factors:
 \end{description}
 
 
-However, in general, the fact that the stepsize depends on the total number of iterations is
+However, in general, the fact that the step size depends on the total number of iterations is
 strange. That means if I want to compute more iterations, I will have to start over again and use a
-different stepsize if I want to bound the performance with formula.
+different step size if I want to bound the performance with formula.
 
 In general, we will prefer to use a decaying learning rate. Specifically, as long as
 $\sum_t\eta_t\rightarrow \infty$ and $\sum_t\eta_t^2$ is bounded or approaches infinity at a slower
@@ -290,8 +290,8 @@ Plug-in to \eqref{eq:proj-subgrad-bound}, we get
   \min_{0\leq \tau \leq T} f(x^\tau) - f(x^*) \leq GR \frac{1+\log T}{2\sqrt{T+1}-2} \lesssim \frac
   {GR\log T}{\sqrt{T}}
 \end{equation}
-Comparing with the optimal bound we get with a fixed stepsize in \eqref{eq:subgrad-bound-fix-eta},
-we lose a factor of $\log T$, but our stepsize does not depend on the total number of iterations any
+Comparing with the optimal bound we get with a fixed step size in \eqref{eq:subgrad-bound-fix-eta},
+we lose a factor of $\log T$, but our step size does not depend on the total number of iterations any
 more.
 
 \subsubsection{Constrained Optimization}
@@ -350,7 +350,23 @@ $\beta$-Lipschitz, that is
 
 \begin{problem}
   Given a convex and $\beta$-smooth function $f:\RR^n\rightarrow\RR$. Find a minimizer of $f$.
+  \label{prob:beta-smooth}
 \end{problem}
+
+\begin{theorem}
+  Solving Problem~\ref{prob:beta-smooth} using gradient descent with step size $\eta_t=1/\beta$ for
+  $T$ iterations gives
+  \begin{equation}
+    f(x^T)-f(x^*) \leq \frac{2\beta \|x_1-x^*\|^2}{T+3}
+  \end{equation}
+  That means to get an approximation error of $\varepsilon$, we will need to run the algorithm for
+  $O(1/\varepsilon)$ iterations.
+  \label{thm:beta-smooth}
+\end{theorem}
+Note we get much faster convergence rate than Problem~\ref{prob:projected-subgradient-descent} by
+making more assumptions on $f$. The parameter $\beta$ control the smoothness of $f$: smaller $\beta$
+means the gradient of $f$ changes more slowly, and $\eta_t=1/\beta$ means we could make aggressive
+movement in each iteration.
 
 \subsection{Sandwiching Smooth Convex Functions}
 
@@ -433,7 +449,66 @@ convexity, we get both lower bound and upper bound
   0 \leq f(y) - f(x) - \langle \nabla f(x), y-x\rangle \leq \frac{\beta}{2}\|y-x\|^2
   \label{eq:beta-smooth-lower-upper-bnd-0}
 \end{equation}
-See again Fig.~\ref{fig:lower-and-upper-bnd-smooth-cvx} for an illustration. Actually, combining
+See again Fig.~\ref{fig:lower-and-upper-bnd-smooth-cvx} for an illustration.
+
+\subsection{Convergence Analysis and Tighter Sandwiching}
+
+To analyze the convergence, let $\Delta_t=f(x^t)-f(x^*)$ be the suboptimality gap at $x^t$. Let
+$y=x^*$, and $x=x^t$ in \eqref{eq:beta-smooth-lower-upper-bnd-0}, and using the lower bound, we can
+upper bound $\Delta_t$ by
+\begin{equation}
+  \Delta_t = f(x^t)-f(x^*) \leq -\langle \nabla f(x^t), x^*-x^t\rangle
+  \leq \|\nabla f(x^t)\|\|x^*-x^t\| \leq R\|\nabla f(x^t)\|
+  \label{eq:beta-smooth-grad-analysis-0}
+\end{equation}
+where we define
+\begin{equation}
+  R=\max_{1\leq t\leq T}\|x^*-x^t\|
+\end{equation}
+On the other hand, using the upper bound in \eqref{eq:beta-smooth-lower-upper-bnd-0} by letting
+$y=x^{t+1}$ and $x=x^t$, we could lower bound $\Delta_t-\Delta_{t+1}$ by
+\[
+\begin{aligned}
+  \Delta_t-\Delta_{t+1} = f(x^t)-f(x^{t+1})
+  &\geq -\langle \nabla f(x^t), x^{t+1}-x^t\rangle - \frac{\beta}{2}\|x^{t+1}-x^t\| \\
+  &= \left(\eta_t - \frac{\beta\eta_t^2}{2}\right) \|\nabla f(x^t)\|^2
+\end{aligned}
+\]
+Naturally, we want to maximize the lower bound, so the step size is chosen to be
+$\eta_t = 1/\beta$. Combining with \eqref{eq:beta-smooth-grad-analysis-0}, we get
+\begin{equation}
+   \Delta_t - \Delta_{t+1}\geq \frac{1}{2\beta}\|\nabla f(x^t)\|^2
+   \geq \frac{1}{2\beta R^2}\Delta_t^2
+ \end{equation}
+ Note the right hand side is non-negative, so $\Delta_t\geq \Delta_{t+1}$. To solve this recursion,
+ divide both side by $\Delta_t\Delta_{t+1}$:
+ \begin{equation}
+   \frac{1}{\Delta_{t+1}} - \frac{1}{\Delta_t} \geq \frac{1}{2\beta R^2}\frac{\Delta_t}{\Delta_
+   {t+1}} \geq \frac{1}{2\beta R^2}
+ \end{equation}
+ Sum the recursion for $t=2,\ldots,T$, we get
+ \[
+ \frac{1}{\Delta}_T \geq \frac{T-1}{2\beta R^2} + \frac{1}{\Delta_1}
+ \geq \frac{T+3}{2\beta R^2}
+ \]
+ where the last inequality is because $\Delta_1$ can be controlled by the upper bound in
+ \eqref {eq:beta-smooth-lower-upper-bnd-0}. Let $x=x^*$ and $y=x^1$, notice $\nabla f(x^*)=0$,
+ \[
+ \Delta_1 = f(x^1)-f(x^*) \leq \frac{\beta}{2}\|x^1-x^*\|^2 \leq \frac{\beta R^2}{2}
+ \]
+
+At this point, we almost proved Theorem~\ref{thm:beta-smooth}, except that we have to control $R$.
+In the following, we will show that $\|x^t-x^*\|$ is actually decreasing at each iteration, and
+bound $R$ by $\|x^1-x^*\|$. Recall in the case of subgradient descent, we use the linear lower bound
+of the function by the subgradient to construct the inequality in \eqref
+{eq:subgrad-lipschitz-analysis-step}. That inequality shows that when $\eta_t$ is small enough,
+because the quadratic term decays faster, we get $\|x^{t+1}-x^*\|^2\leq \|x^t-x^*\|^2$. However, in
+the case here, since $\eta_t=1/\beta$, especially when $\beta$ is small, we could be moving with
+very large step size. So the argument is no longer useful here.
+
+To properly bound $R$, we will need to get a better lower bound of $f$ than in \eqref
+{eq:beta-smooth-lower-upper-bnd-0}.
+Actually, combining
 convexity and $\beta$-smoothness, the lower bound in \eqref{eq:beta-smooth-lower-upper-bnd-0} could
 be improved. Consider the extreme case when $f(x)$ is a linear function, then the lower bound is
 actually tight. In this case, we also have $\nabla f(x)=\nabla f(y)$. However, if $f(x)$ is not
@@ -448,6 +523,7 @@ quantity $\|\nabla f(x)-\nabla f(y)\|$.
   \frac{1}{2\beta}\|\nabla f(x)-\nabla f(y)\|^2
   \leq f(y) - f(x) - \langle \nabla f(x), y-x\rangle
   \leq \frac {\beta} {2}\|y-x\|^2
+  \label{eq:beta-smooth-lower-upper-bnd-1}
   \end{equation}
 \end{lemma}
 \begin{proof}
@@ -480,6 +556,25 @@ quantity $\|\nabla f(x)-\nabla f(y)\|$.
   Since the lower bound is a quadratic function in $\alpha$, we can maximize the lower bound by
   taking $\alpha = 1/\beta$. And the conclusion follows.
 \end{proof}
+
+With the improved lower bound of $f$ in \eqref{eq:beta-smooth-lower-upper-bnd-1}, we can now bound
+$R$ by showing that
+\[
+  \begin{aligned}
+    \|x^{t+1}-x^*\|^2
+    &=\|x^t-x^*\|^2 + \frac{1}{\beta^2}\|\nabla f(x^t)\|^2 - \frac{2}{\beta}\langle \nabla f(x^t),
+    x^t-x^*\rangle \\
+    &\leq \|x^t-x^*\|^2 + \frac{1}{\beta^2}\|\nabla f(x^t)\|^2
+    - \frac{2}{\beta}\left(f(x^t)-f(x^*) + \frac{1}{2\beta}\|\nabla f(x^t)-\nabla f(x^*)\|^2\right)
+    \\
+    &\leq \|x^t-x^*\|^2 + \frac{1}{\beta^2}\|\nabla f(x^t)\|^2 - \frac{2}{\beta}\times \frac{1}
+    {2\beta}\|\nabla f(x^t)\|^2 \\
+    & = \|x^t-x^*\|^2
+  \end{aligned}
+\]
+Therefore, $R\leq \|x^1-x^*\|$, which conclude the proof of Theorem~\ref{thm:beta-smooth}. Note if
+we move with a step size slightly larger than $1/\beta$, the proof above will no longer be valid.
+
 %\bibliographystyle{alpha}
 %\bibliography{bibfile}
 
