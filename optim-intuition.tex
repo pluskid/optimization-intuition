@@ -94,8 +94,9 @@ secondextra={
 
 \begin{document}
 \maketitle
+\tableofcontents
 
-\section{Projected Subgradient Descent for Lipschitz Functions}
+\section{Projected Subgradient Descent for Convex Lipschitz Functions}
 
 \subsection{Problem Setup}
 
@@ -332,7 +333,7 @@ need to modify is \eqref{eq:subgrad-lipschitz-analysis-step}. Since $x^*\in\sK$,
 and the rest of the analysis follows as before. So for constrained optimization, we get the same
 convergence rate as the unconstrained case.
 
-\section{Gradient Descent for Smooth Function}
+\section{Gradient Descent for Convex Smooth Functions}
 
 In this section, we look at smooth functions. Specifically, $f$ is differentiable, and its gradient
 $\nabla f$ is Lipschitz continuous. By adding those assumptions, we know better about $f$ than in
@@ -574,6 +575,8 @@ $R$ by showing that
 \]
 Therefore, $R\leq \|x^1-x^*\|$, which conclude the proof of Theorem~\ref{thm:beta-smooth}. Note if
 we move with a step size slightly larger than $1/\beta$, the proof above will no longer be valid.
+
+\section{Projected Gradient Descent for Convex Smooth Functions with Constraints}
 
 %\bibliographystyle{alpha}
 %\bibliography{bibfile}
