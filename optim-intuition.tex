@@ -18,6 +18,7 @@
 \usepackage[font=scriptsize,labelfont=bf]{caption}
 \usepackage{wrapfig}
 \usepackage{tikz}
+\usepackage{pgfplots}
 
 %=================================
 % pre-defined theorem environments
@@ -108,7 +109,7 @@ secondextra={
   \begin{equation}
     |f(x)-f(y)| \leq L\|x-y\|_2, \quad x,y\in\sK
   \end{equation}
-  Find the minimizer of $f$ on $\sK$:
+  Find a minimizer of $f$ on $\sK$:
   \[
   \minimize_{x\in\sK} f(x)
   \]
@@ -176,6 +177,7 @@ Note $f$ being $L$-Lipschitz in $\sK$ implies that $\|g\|_2 \leq L$, $\forall g\
 By the property of subgradient, we have
 \begin{equation}
   0\leq f(x^t) - f(x^*) \leq g_t^\top (x^t-x^*) = -g_t^\top (x^*-x^t)
+  \label{eq:subgrad-lower-bound-f}
 \end{equation}
 \begin{wrapfigure}{r}{.35\linewidth}
 \centering
@@ -296,7 +298,7 @@ more.
 
 \begin{wrapfigure}{r}{.35\linewidth}
 \centering
-\includegraphics[width=.9\linewidth]{figs/convex-projection}
+\includegraphics[width=.8\linewidth]{figs/convex-projection}
 \caption{Illustration of convex projection. Figure source: S{\'e}bastien Bubeck, \emph{Theory of
 Convex Optimization for Machine Learning}.}
 \end{wrapfigure}
@@ -330,6 +332,154 @@ need to modify is \eqref{eq:subgrad-lipschitz-analysis-step}. Since $x^*\in\sK$,
 and the rest of the analysis follows as before. So for constrained optimization, we get the same
 convergence rate as the unconstrained case.
 
+\section{Gradient Descent for Smooth Function}
+
+In this section, we look at smooth functions. Specifically, $f$ is differentiable, and its gradient
+$\nabla f$ is Lipschitz continuous. By adding those assumptions, we know better about $f$ than in
+the simple Lipschitz case. For example, we know two nearby points should have similar gradients.
+In particular, if $x$ is close to the optimal $x^*$, since $\nabla f(x^*)=0$, we know that $\nabla
+f(x)$ must be small (close to zero).
+
+\begin{definition}[$\beta$-smooth functions]
+A differentiable function $f:\RR^n\rightarrow \RR$ is $\beta$-smooth if its gradient $\nabla f$ is
+$\beta$-Lipschitz, that is
+\begin{equation}
+  \|\nabla f(x)-\nabla f(y)\| \leq \beta \|x-y\|,\quad \forall x,y\in\RR^d
+\end{equation}
+\end{definition}
+
+\begin{problem}
+  Given a convex and $\beta$-smooth function $f:\RR^n\rightarrow\RR$. Find a minimizer of $f$.
+\end{problem}
+
+\subsection{Sandwiching Smooth Convex Functions}
+
+In the case of convex Lipschitz function, we use the property of subgradient to lower bound $f$.
+$\forall x,y\in\RR^n$ and $\forall g\in\partial f(x)$
+\[
+  f(y) \geq f(x) + g^\top (y-x)
+\]
+this leads to \eqref{eq:subgrad-lower-bound-f}. And in the proof, we use this to lower bound $f
+(x^*)$, making sure that $f(x^t)-f(x^*)$ is controlled, i.e. we are not too far away from the
+optimal.
+
+In the scenario of $\beta$-smooth function, we can get the same lower bound, because $\nabla f(x)$
+is always the unique subgradient at any point $x$. Moreover, the $\beta$-smoothness gives us an
+upper bound:
+\[
+  f(y) \leq f(x) + \nabla f(x)^\top (y-x) + \frac{\beta}{2}\|y-x\|^2
+\]
+and this could be used to get a lower bound on the decrement $f(x^t)-f(x^{t+1})$ at each iteration.
+Sef Fig.~\ref{fig:lower-and-upper-bnd-smooth-cvx} for an illustration. We state the conclusions
+below formally.
+
+\begin{figure}
+  \begin{tikzpicture}
+    \begin{axis}[width=16cm,height=8cm]
+      \addplot[mark=none] {(x+2)^2};
+      \addplot[mark=none,red,domain=-2.5:5] {36+12*(x-4)};
+      \addplot[mark=none,blue,domain=-1:5] {36+12*(x-4)+3*(x-4)^2};
+      \addplot[only marks] coordinates {
+        (4,36) (-2,0) (-2,-36) (1,9) (1,27)
+      };
+      \node at (axis cs:4,36) [anchor=south] {$f(x^t)$};
+      \node at (axis cs:-2,0) [anchor=south] {$f(x^*)$};
+      \node at (axis cs:-2,-36) [anchor=south east] {$f_L(x^*)$};
+      \node at (axis cs:1,9) [anchor=south east] {$f_L(x^{t+1})$};
+      \node at (axis cs:1,27) [anchor=south west] {$f_U(x^{t+1})$};
+
+      \addplot[mark=none,dashed,red] coordinates {
+        (-2,0) (-2,-36)
+      };
+      \addplot[mark=none,dashed,blue] coordinates {
+        (1,9) (1,27)
+      };
+    \end{axis}
+  \end{tikzpicture}
+  \caption{Illustration of a convex $\beta$-smooth function $f(x)$, with its lower bound $f^L(x)=f
+  (x_0)+\langle \nabla f(x_0),x-x_0\rangle$ and upper bound $f^U(x)=f(x_0)+\langle \nabla f(x_0),
+  (x-x_0)\rangle + 0.5\beta\|x-x_0\|^2$. The lower bound makes sure $f (x^t)$ is not too far away
+  from $f (x^*)$, while
+  the upper bound makes sure some progress $f(x^t)-f(x^{t+1})$ are made in each iteration.}
+  \label{fig:lower-and-upper-bnd-smooth-cvx}
+\end{figure}
+
+\begin{lemma}
+  Assume $f:\RR^n\rightarrow \RR$ is $\beta$-smooth, then $\forall x,y\in\RR^n$
+  \[
+  |f(y)-f(x)- \langle \nabla f(x), y-x\rangle | \leq \frac{\beta}{2}\|y-x\|^2
+  \]
+\end{lemma}
+\begin{proof}
+By the fundamental theorem for line integrals,
+\[
+  f(y) = f(x) + \int_{0}^1 \langle \nabla f(x + t(y-x)), y-x\rangle dt
+\]
+Plugin $f(y)-f(x)$,
+\[
+  \begin{aligned}
+  |f(y)-f(x)- \langle \nabla f(x), y-x\rangle | \leq \frac{\beta}{2}\|y-x\|^2
+  &= \left| \int_0^1 \langle \nabla f(x+t(y-x))-\nabla f(x), y-x\rangle dt \right| \\
+  &\leq \|y-x\|\int_0^1 \|\nabla f(x+t(y-x))-\nabla f(x)\| dt \\
+  &\leq \|y-x\|\int_0^1 \beta t\|y-x\|dt \\
+  &=\frac{\beta}{2}\|y-x\|^2
+  \end{aligned}
+\]
+\end{proof}
+
+If we further know that $f$ is convex, combining the lower bound from the first order condition of
+convexity, we get both lower bound and upper bound
+\begin{equation}
+  0 \leq f(y) - f(x) - \langle \nabla f(x), y-x\rangle \leq \frac{\beta}{2}\|y-x\|^2
+  \label{eq:beta-smooth-lower-upper-bnd-0}
+\end{equation}
+See again Fig.~\ref{fig:lower-and-upper-bnd-smooth-cvx} for an illustration. Actually, combining
+convexity and $\beta$-smoothness, the lower bound in \eqref{eq:beta-smooth-lower-upper-bnd-0} could
+be improved. Consider the extreme case when $f(x)$ is a linear function, then the lower bound is
+actually tight. In this case, we also have $\nabla f(x)=\nabla f(y)$. However, if $f(x)$ is not
+linear, $\nabla f(x)\neq \nabla f(y)$, we might observe a non-zero gap between $f(x)$ and its linear
+lower bound. It is also intuitive that the gap might be larger when the gradient $\nabla f(y)$
+changed a lot from $\nabla f(x)$, so we are thinking about getting a better lower bound using the
+quantity $\|\nabla f(x)-\nabla f(y)\|$.
+
+\begin{lemma}
+  Let $f:\RR^n\rightarrow\RR$ be a convex and $\beta$-smooth function, then $\forall x,y\in\RR^n$
+  \begin{equation}
+  \frac{1}{2\beta}\|\nabla f(x)-\nabla f(y)\|^2
+  \leq f(y) - f(x) - \langle \nabla f(x), y-x\rangle
+  \leq \frac {\beta} {2}\|y-x\|^2
+  \end{equation}
+\end{lemma}
+\begin{proof}
+  In order to invite both $\nabla f(x)$ and $\nabla f(y)$ into play, we consider a third point
+  $z\in\RR^n$, and approximate $f(z)$ from below by $\nabla f(y)$ and from above by $\nabla f(x)$,
+  respectively. Using \eqref{eq:beta-smooth-lower-upper-bnd-0}
+  \[
+  \begin{aligned}
+    f(z) - f(x) - \langle \nabla f(x), z-x\rangle &\geq 0\\
+    f(z) - f(y) - \langle \nabla f(y), z-y\rangle &\leq \frac{\beta}{2}\|z-y\|^2
+  \end{aligned}
+  \]
+  Multiply the first inequality by $-1$ and sum the two inequalities, we get
+  \[
+  f(x)-f(y)+\langle \nabla f(x), z-x\rangle - \langle \nabla f(y),z-y\rangle \leq \frac{\beta}
+  {2}\|z-y\|^2
+  \]
+  Re-write the inequality by moving the quantity we want to lower bound to the right,
+  \[
+   \langle \nabla f(x), z-y\rangle - \langle \nabla f(y),z-y\rangle - \frac{\beta}{2}\|z-y\|^2\leq f
+   (y)-f (x)-\langle \nabla f (x),y-x\rangle
+  \]
+  Inspecting the left hand side, if we let $z=y+\alpha (\nabla f(y)-\nabla f(x))$ for any
+  $\alpha\in\RR$, we get
+  \[
+  \left(\alpha - \frac{\alpha^2\beta}{2}\right)\|\nabla f(y)-\nabla f(x)\|^2\leq f (y)-f (x)-\langle
+  \nabla f
+  (x),y-x\rangle
+  \]
+  Since the lower bound is a quadratic function in $\alpha$, we can maximize the lower bound by
+  taking $\alpha = 1/\beta$. And the conclusion follows.
+\end{proof}
 %\bibliographystyle{alpha}
 %\bibliography{bibfile}
 
