@@ -13,6 +13,9 @@
 \usepackage[colorlinks=true]{hyperref}
 \usepackage{enumerate}
 
+\usepackage{fullpage}
+
+\usepackage[font=scriptsize,labelfont=bf]{caption}
 \usepackage{wrapfig}
 \usepackage{tikz}
 
@@ -168,12 +171,14 @@ Note $f$ being $L$-Lipschitz in $\sK$ implies that $\|g\|_2 \leq L$, $\forall g\
 \forall x\in\sK$. In order to avoid overshooting, we will have to move with tiny stepsizes.
 
 \subsubsection{Convergence Analysis}
+\label{sec:subgrad-lipschitz-analysis}
 
 By the property of subgradient, we have
 \begin{equation}
   0\leq f(x^t) - f(x^*) \leq g_t^\top (x^t-x^*) = -g_t^\top (x^*-x^t)
 \end{equation}
-\begin{wrapfigure}{r}{.4\linewidth}
+\begin{wrapfigure}{r}{.35\linewidth}
+\centering
 \begin{tikzpicture}[scale=1.5]
   \coordinate [label=left:$x^t$] (Xt) at (-2,0);
   \coordinate [label=below:$x^*$] (Xs) at (0,0);
@@ -201,14 +206,15 @@ we do not know much about the function values. But as we can see from Figure~\re
 we will move away from $x^*$ with any positive step size. However, if $f(x^t)-f(x^*)>0$, i.e. we are
 not already at the optimal, the angle is strictly less than $\pi/2$, so if we move with a small
 enough step size, we will get closer to $x^*$. Algebraically,
-\[
+\begin{equation}
 \begin{aligned}
   \|x^{t+1}-x^*\|^2 = \|x^{t+1}-x^t + x^t-x^*\|^2
   &= \eta_t^2\|g_t\|^2 + \|x^t-x^*\|^2 - 2\eta_tg_t^\top (x^t-x^*) \\
   &\leq {\color{red}\eta_t^2\|g_t\|^2} + \|x^t-x^*\|^2 - {\color{blue}2\eta_t\left(f(x^t)-f
-  (x^*)\right)} \\
+  (x^*)\right)}
+  \label{eq:subgrad-lipschitz-analysis-step}
 \end{aligned}
-\]
+\end{equation}
 Since $\|g_t\|\leq L$ by our assumption, the \textcolor{red}{red term} decays quadratically, while
 the \textcolor{blue}{blue term} only decays linearly. So when $\eta_t$ is small enough, we will have
 $\|x^{t+1}-x^*\|^2 \leq \|x^t-x^*\|^2$. Furthermore, the progress we make by moving towards $x^*$ is
@@ -288,6 +294,41 @@ more.
 
 \subsubsection{Constrained Optimization}
 
+\begin{wrapfigure}{r}{.35\linewidth}
+\centering
+\includegraphics[width=.9\linewidth]{figs/convex-projection}
+\caption{Illustration of convex projection. Figure source: S{\'e}bastien Bubeck, \emph{Theory of
+Convex Optimization for Machine Learning}.}
+\end{wrapfigure}
+In the constrained case, we have an extra projection step. However, the same analysis naturally goes
+through because projection into convex set is a \emph{contraction}. Specifically, we have the
+following lemma.
+
+\begin{lemma}
+  Let $\sK\subset\RR^n$ be a closed convex set, let $x\in\sK$ and $y\in\RR^n$. Then
+  \begin{equation}
+    (x-\Pi_\sK(y))^\top (y-\Pi_\sK(y)) \leq 0
+  \end{equation}
+  which also implies
+  \begin{equation}
+    \|x-\Pi_\sK(y)\|^2 + \|y-\Pi_\sK(y)\|^2 \leq \|y-x\|^2
+    \label{eq:conv-proj-contraction-0}
+  \end{equation}
+\end{lemma}
+
+This lemma could be proved with \emph{supporting hyperplane theorem} of convex sets. \eqref
+{eq:conv-proj-contraction-0} implies
+\[
+  \|x-\Pi_{\sK}\|^2 \leq \|y-x\|^2
+\]
+So if we go back to our analysis in Section~\ref{sec:subgrad-lipschitz-analysis}, the only thing we
+need to modify is \eqref{eq:subgrad-lipschitz-analysis-step}. Since $x^*\in\sK$,
+\[
+  \|x^{t+1}-x^*\|^2 = \|\Pi_\sK(y^{t+1})-x^*\|^2 \leq \|y^{t+1}-x^*\|^2
+  = \eta_t^2\|g_t\|^2 + \|x^t-x^*\|^2 - 2\eta_tg_t^\top (x^t-x^*)
+\]
+and the rest of the analysis follows as before. So for constrained optimization, we get the same
+convergence rate as the unconstrained case.
 
 %\bibliographystyle{alpha}
 %\bibliography{bibfile}
