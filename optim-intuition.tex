@@ -573,8 +573,26 @@ $R$ by showing that
     & = \|x^t-x^*\|^2
   \end{aligned}
 \]
-Therefore, $R\leq \|x^1-x^*\|$, which conclude the proof of Theorem~\ref{thm:beta-smooth}. Note if
-we move with a step size slightly larger than $1/\beta$, the proof above will no longer be valid.
+Therefore, $R\leq \|x^1-x^*\|$, which conclude the proof of Theorem~\ref{thm:beta-smooth}.
+Actually, in the proof above, we only need a property of the gradient called \emph{co-coercivity}.
+
+\begin{definition}[Co-coercive mapping]
+A mapping $F:\RR^n\rightarrow\RR^n$ is co-coercive with parameter $C$ if $\forall x,y\in\RR^d$,
+\begin{equation}
+  \langle F(x)-F(y), x-y\rangle \geq C\|F(x)-F(y)\|^2
+\end{equation}
+\end{definition}
+By switching the role of $x$ and $y$ in the lower bound of $f$ in \eqref
+{eq:beta-smooth-lower-upper-bnd-1}, it is easy to show the following property on the co-coercivity
+of $\nabla f(x)$.
+\begin{lemma}[Co-coercivity of gradient of convex smooth functions]
+Let $f:\RR^n\rightarrow \RR$ be a convex $\beta$-smooth function, then $\nabla f(x)$ is co-coercive
+mapping with parameter $1/\beta$. That is
+\begin{equation}
+  \langle \nabla f(x)-\nabla f(y), x-y\rangle \geq \frac{1}{\beta}\|\nabla f(x)-\nabla f(y)\|^2
+\end{equation}
+\end{lemma}
+We will re-visit some variants of this property in our later adventures of convergence analysis.
 
 \section{Projected Gradient Descent for Convex Smooth Functions with Constraints}
 
