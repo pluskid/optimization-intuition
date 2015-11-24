@@ -75,6 +75,7 @@ secondextra={
 \newcommand{\sB}{\mathcal{B}}
 \newcommand{\sK}{\mathcal{K}}
 \newcommand{\sL}{\mathcal{L}}
+\newcommand{\sX}{\mathcal{X}}
 
 \newcommand{\TODO}{\textbf{\textsf{TODO}}}
 
@@ -101,18 +102,18 @@ secondextra={
 \subsection{Problem Setup}
 
 \begin{problem}
-  Given $f:\RR^n\rightarrow\RR$, and $\sK\subset\RR^n$. Assume $\sK$ is compact and convex, included
+  Given $f:\RR^n\rightarrow\RR$, and $\sX\subset\RR^n$. Assume $\sX$ is compact and convex, included
   in a Euclidean ball of radius $R$:
   \begin{equation}
-    \sK \subset \sB_2(0; R)
+    \sX \subset \sB_2(0; R)
   \end{equation}
-  and $f$ is convex and $L$-Lipschitz on $\sK$:
+  and $f$ is convex and $L$-Lipschitz on $\sX$:
   \begin{equation}
-    |f(x)-f(y)| \leq L\|x-y\|_2, \quad x,y\in\sK
+    |f(x)-f(y)| \leq G\|x-y\|_2, \quad x,y\in\sX
   \end{equation}
-  Find a minimizer of $f$ on $\sK$:
+  Find a minimizer of $f$ on $\sX$:
   \[
-  \minimize_{x\in\sK} f(x)
+  \minimize_{x\in\sX} f(x)
   \]
   \label{prob:projected-subgradient-descent}
 \end{problem}
@@ -122,10 +123,10 @@ secondextra={
 \begin{algorithm}
   \caption{Projected Subgradient Descent}
   \begin{algorithmic}
-    \State randomly initialize $x^0\in\sK$
+    \State randomly initialize $x^0\in\sX$
     \For{$t\gets 0,\ldots,T-1$}
       \State $y^{t+1}\gets x^{t}-\eta_t g_t$, where $g_t\in\partial f(x^{t})$
-      \State $x^{t+1}\gets \Pi_{\sK}(y^{t+1})$
+      \State $x^{t+1}\gets \Pi_{\sX}(y^{t+1})$
     \EndFor
   \end{algorithmic}
   \label{alg:projected-subgradient-descent}
@@ -135,7 +136,7 @@ secondextra={
   Running Algorithm~\ref{alg:projected-subgradient-descent} on Problem~\ref
   {prob:projected-subgradient-descent} for $T$ iterations gives
   \begin{equation}
-  \min_{0\leq\tau\leq T}f(x^\tau) - f(x^*) \leq \frac{R^2 + G^2\sum_{t=0}^{T-1}\eta_t^2}{\sum_{t=0}^
+  \min_{0\leq\tau\leq T}f(x^\tau) - f(x^*) \leq \frac{R^2 + G^2\sum_{t=0}^{T-1}\eta_t^2}{2\sum_{t=0}^
   {T-1}\eta_t}
   \label{eq:proj-subgrad-bound}
   \end{equation}
@@ -150,7 +151,7 @@ secondextra={
 \subsubsection{Problem Assumptions}
 \label{sec:subgrad-descent-assumption}
 
-We consider the unconstrained case first, i.e. $\sK=\RR^n$. Since $f$ is convex know that $x^*$ is a
+We consider the unconstrained case first, i.e. $\sX=\RR^n$. Since $f$ is convex know that $x^*$ is a
 minimizer of $f$ if and only if $0\in\partial f (x^*)$. However, without making any extra
 assumptions, we have no idea of the behavior of $f$ even in a small neighborhood of $x^*$. Consider
 for example $f(x)=C|x|$, with $C>0$ a large constant. Assume we are currently very close to the
@@ -167,10 +168,10 @@ jumping back and forth at $\varepsilon$ and $\varepsilon - \eta C$ indefinitely.
 In order to fix this, we need to make additional assumptions. We will see later in the case of
 smooth functions, the gradient changes continuously. So we know that at a local neighborhood of the
 optimal (gradient is 0), the gradient is also small. But here, we are working with
-non-differentiable functions, we will just assume $f$ is $L$-Lipschitz.
+non-differentiable functions, we will just assume $f$ is $G$-Lipschitz.
 
-Note $f$ being $L$-Lipschitz in $\sK$ implies that $\|g\|_2 \leq L$, $\forall g\in\partial f(x),
-\forall x\in\sK$. In order to avoid overshooting, we will have to move with tiny stepsizes.
+Note $f$ being $G$-Lipschitz in $\sX$ implies that $\|g\|_2 \leq G$, $\forall g\in\partial f(x),
+\forall x\in\sX$. In order to avoid overshooting, we will have to move with tiny stepsizes.
 
 \subsubsection{Convergence Analysis}
 \label{sec:subgrad-lipschitz-analysis}
@@ -218,7 +219,8 @@ enough step size, we will get closer to $x^*$. Algebraically,
   \label{eq:subgrad-lipschitz-analysis-step}
 \end{aligned}
 \end{equation}
-Since $\|g_t\|\leq L$ by our assumption, the \textcolor{red}{red term} decays quadratically, while
+Since $\|g_t\|\leq G$ by our assumption, the \textcolor{red}{red term} decays quadratically as
+$\eta_t\rightarrow 0$, while
 the \textcolor{blue}{blue term} only decays linearly. So when $\eta_t$ is small enough, we will have
 $\|x^{t+1}-x^*\|^2 \leq \|x^t-x^*\|^2$. Furthermore, the progress we make by moving towards $x^*$ is
 characterized by $f(x^t)-f(x^*)$. So if we are still far away from the optimal, we will be making
@@ -238,11 +240,11 @@ $t=0,\ldots,T-1$,
 \]
 It then implies
 \begin{equation}
-\min_{0\leq\tau\leq T}f(x^\tau) - f(x^*) \leq \frac{R^2 + G^2\sum_{t=0}^{T-1}\eta_t^2}{\sum_{t=0}^
-{T-1}\eta_t}
+\min_{0\leq\tau\leq T}f(x^\tau) - f(x^*)
+\leq \frac{R^2 + G^2\sum_{t=0}^{T-1}\eta_t^2}{2\sum_{t=0}^ {T-1}\eta_t}
 \end{equation}
 which proved Theorem~\ref{thm:projected-subgradient-descent} for the case of unconstrained
-optimization ($\sK=\RR^n$).
+optimization ($\sX=\RR^n$).
 
 \subsection{Choosing Step Sizes}
 
@@ -251,7 +253,7 @@ will give completely trivial bounds). So we could actually optimize the right ha
 ``optimal'' bound. To make the problem easier, we choose a fixed stepsize $\eta_t=\eta$ for
 $t=0,\ldots,T-1$. So the right hand side becomes
 \begin{equation}
-  \frac{R^2+G^2T\eta^2}{T\eta} = \frac{R^2}{T\eta} + G^2\eta \geq \frac{2GR}{\sqrt{T}}
+  \frac{R^2+G^2T\eta^2}{2T\eta} = \frac{R^2}{2T\eta} + \frac{G^2\eta}{2} \geq \frac{GR}{\sqrt{T}}
   \label{eq:subgrad-bound-fix-eta}
 \end{equation}
 where the inequality holds with equality when
@@ -264,7 +266,7 @@ Note the choice of step size depends on several factors:
   us to be careful and move with small step sizes. Our intuition is consistent here.
   \item[$R$:] In our analysis, we only use $R$ to bound $\|x^0-x^*\|$. When $R$ is large, we want to
   use large step size, otherwise we might never reach the optimal in the given time budget $T$.
-  Generally when $x^*$ is unknown, $R$ can be bounded by the size of $\sK$ for the case
+  Generally when $x^*$ is unknown, $R$ can be bounded by the size of $\sX$ for the case
   of constrained optimization.
   \item[$T$:] The inverse dependency on $T$ can be interpreted as: when having a large time budget,
   we can be a little bit more careful and move slowly.
@@ -288,14 +290,15 @@ take $\eta_t=R/(G\sqrt{t+1})$, since
 \]
 Plug-in to \eqref{eq:proj-subgrad-bound}, we get
 \begin{equation}
-  \min_{0\leq \tau \leq T} f(x^\tau) - f(x^*) \leq GR \frac{1+\log T}{2\sqrt{T+1}-2} \lesssim \frac
+  \min_{0\leq \tau \leq T} f(x^\tau) - f(x^*)
+  \leq GR \frac{1+\log T}{4\sqrt{T+1}-4} \lesssim \frac
   {GR\log T}{\sqrt{T}}
 \end{equation}
 Comparing with the optimal bound we get with a fixed step size in \eqref{eq:subgrad-bound-fix-eta},
 we lose a factor of $\log T$, but our step size does not depend on the total number of iterations any
 more.
 
-\subsubsection{Constrained Optimization}
+\subsection{Constrained Optimization}
 
 \begin{wrapfigure}{r}{.35\linewidth}
 \centering
@@ -308,26 +311,27 @@ through because projection into convex set is a \emph{contraction}. Specifically
 following lemma.
 
 \begin{lemma}
-  Let $\sK\subset\RR^n$ be a closed convex set, let $x\in\sK$ and $y\in\RR^n$. Then
+  Let $\sX\subset\RR^n$ be a closed convex set, let $x\in\sX$ and $y\in\RR^n$. Then
   \begin{equation}
-    (x-\Pi_\sK(y))^\top (y-\Pi_\sK(y)) \leq 0
+    (x-\Pi_\sX(y))^\top (y-\Pi_\sX(y)) \leq 0
   \end{equation}
   which also implies
   \begin{equation}
-    \|x-\Pi_\sK(y)\|^2 + \|y-\Pi_\sK(y)\|^2 \leq \|y-x\|^2
+    \|x-\Pi_\sX(y)\|^2 + \|y-\Pi_\sX(y)\|^2 \leq \|y-x\|^2
     \label{eq:conv-proj-contraction-0}
   \end{equation}
+  \label{lem:proj-contraction}
 \end{lemma}
 
 This lemma could be proved with \emph{supporting hyperplane theorem} of convex sets. \eqref
 {eq:conv-proj-contraction-0} implies
 \[
-  \|x-\Pi_{\sK}\|^2 \leq \|y-x\|^2
+  \|x-\Pi_{\sX}\|^2 \leq \|y-x\|^2
 \]
 So if we go back to our analysis in Section~\ref{sec:subgrad-lipschitz-analysis}, the only thing we
-need to modify is \eqref{eq:subgrad-lipschitz-analysis-step}. Since $x^*\in\sK$,
+need to modify is \eqref{eq:subgrad-lipschitz-analysis-step}. Since $x^*\in\sX$,
 \[
-  \|x^{t+1}-x^*\|^2 = \|\Pi_\sK(y^{t+1})-x^*\|^2 \leq \|y^{t+1}-x^*\|^2
+  \|x^{t+1}-x^*\|^2 = \|\Pi_\sX(y^{t+1})-x^*\|^2 \leq \|y^{t+1}-x^*\|^2
   = \eta_t^2\|g_t\|^2 + \|x^t-x^*\|^2 - 2\eta_tg_t^\top (x^t-x^*)
 \]
 and the rest of the analysis follows as before. So for constrained optimization, we get the same
@@ -411,6 +415,11 @@ below formally.
       \addplot[mark=none,dashed,blue] coordinates {
         (1,9) (1,27)
       };
+
+      \addplot[domain=-2:3.5,dotted] {0};
+      \addplot[domain=1:3.5,dotted] {9};
+      \draw [<->] (axis cs:3.3,0) -- (axis cs:3.3,9);
+      \node at (axis cs:3.5,5) [anchor=west] {$f(x^{t+1})-f(x^*)$};
     \end{axis}
   \end{tikzpicture}
   \caption{Illustration of a convex $\beta$-smooth function $f(x)$, with its lower bound $f^L(x)=f
@@ -468,15 +477,24 @@ where we define
 \end{equation}
 On the other hand, using the upper bound in \eqref{eq:beta-smooth-lower-upper-bnd-0} by letting
 $y=x^{t+1}$ and $x=x^t$, we could lower bound $\Delta_t-\Delta_{t+1}$ by
-\[
+\begin{equation*}
 \begin{aligned}
   \Delta_t-\Delta_{t+1} = f(x^t)-f(x^{t+1})
-  &\geq -\langle \nabla f(x^t), x^{t+1}-x^t\rangle - \frac{\beta}{2}\|x^{t+1}-x^t\| \\
+  &\geq -\langle \nabla f(x^t), x^{t+1}-x^t\rangle - \frac{\beta}{2}\|x^{t+1}-x^t\|^2 \\
   &= \left(\eta_t - \frac{\beta\eta_t^2}{2}\right) \|\nabla f(x^t)\|^2
 \end{aligned}
-\]
+\end{equation*}
 Naturally, we want to maximize the lower bound, so the step size is chosen to be
-$\eta_t = 1/\beta$. Combining with \eqref{eq:beta-smooth-grad-analysis-0}, we get
+$\eta_t = 1/\beta$. In this case,
+\begin{equation}
+  \Delta_t - \Delta_{t+1} \geq \frac{1}{2\beta}\|\nabla f(x^t)\|^2
+  \label{eq:beta-smooth-grad-analysis-0.5}
+\end{equation}
+Note \eqref{eq:beta-smooth-grad-analysis-0} and \eqref{eq:beta-smooth-grad-analysis-0.5} are linked
+together by $\|\nabla f(x^t)\|$: if $\|\nabla f(x^t)\|$ is large, then moving one step makes a lot
+of progress in $\Delta_t-\Delta_{t+1}$; on the other hand, if $\|\nabla f(x^t)\|$ is small,
+$\Delta_t$ is also small, meaning we are close to the optimal.
+Combining the two equations, we get
 \begin{equation}
    \Delta_t - \Delta_{t+1}\geq \frac{1}{2\beta}\|\nabla f(x^t)\|^2
    \geq \frac{1}{2\beta R^2}\Delta_t^2
@@ -595,6 +613,108 @@ mapping with parameter $1/\beta$. That is
 We will re-visit some variants of this property in our later adventures of convergence analysis.
 
 \section{Projected Gradient Descent for Convex Smooth Functions with Constraints}
+
+For Problem~\ref{prob:projected-subgradient-descent}, generalization from unconstrained case to
+constrained case is straightforward, because we only rely on deriving an upper bound of $\|
+(x^t-\eta_tg_t) - x^*\|$, as in \eqref {eq:subgrad-lipschitz-analysis-step}. By the contraction
+property of convex projection, as stated in Lemma~\ref{lem:proj-contraction}, we naturally get
+\[
+  \|\Pi_\sX(x^t-\eta_tg_t)-x^*\| \leq \|(x^t-\eta_tg_t)-x^*\|
+\]
+and everything follows directly. In the smooth case, things become a bit more complicated.
+Especially in the argument that we are making a lot of progress in one step: the contraction might
+reduce the aggressive movement we made, and the effective progress might get discounted. So we state
+this as a separate problem.
+
+\begin{problem}
+  Give a closed convex set $\sX$, and a convex, $\beta$-smooth function $f:\sX\rightarrow \RR$. Find
+  a minimizer of $f$ on $\sX$.
+\end{problem}
+
+\subsection{Intuition and Convergence Analysis}
+
+In the unconstrained case, we use bound $\Delta_{t+1}=f(x^{t+1})-f(x^*)$ (see Fig.~\ref
+{fig:lower-and-upper-bnd-smooth-cvx}) by roughly
+\[
+\begin{aligned}
+  f(x^{t+1})-f(x^*) &= {\color{red}f(x^t)-f(x^*)} - {\color{blue}(f(x^t)-f(x^{t+1}))} \\
+  &\leq {\color{red}\langle \nabla f(x^t),x^t-x^*\rangle} - {\color{blue}\frac{1}{2\beta}\|\nabla
+  f(x^t)\|^2}
+\end{aligned}
+\]
+where the upper bound of the red term is provided in \eqref{eq:beta-smooth-grad-analysis-0} and the
+lower bound of the blue term in \eqref{eq:beta-smooth-grad-analysis-0.5}. And the quantity here is
+characterized by $\|\nabla f(x^t)\|$. In the constrained case, we will do a similar thing, but with
+a different charactering quantity.
+
+Remember the bounds for both the red term and blue term are directly from \eqref
+{eq:beta-smooth-lower-upper-bnd-0}. In the constrained case,
+\begin{equation}
+  x^{t+1} = \Pi_\sX(x^t-\eta_t \nabla f(x^t))
+\end{equation}
+By the property of convex projection in Lemma~\ref{lem:proj-contraction}, for any $y\in\sX$,
+\[
+  \langle x^{t+1} - (x^t-\eta_t\nabla f(x^t)), x^{t+1} - y \rangle \leq 0
+  \quad\Leftrightarrow\quad
+  \langle \nabla f(x^t), x^{t+1}-y\rangle \leq \frac{1}{\eta_t}\langle x^t-x^{t+1}, x^{t+1}-y\rangle
+\]
+With this tool, we carry the out the analysis as before, by applying \eqref
+{eq:beta-smooth-lower-upper-bnd-0},
+\[
+  \begin{aligned}
+    f(x^{t+1})-f(x^*) &=f(x^t)-f(x^*) - (f(x^t)-f(x^{t+1})) \\
+    &\leq \langle \nabla f(x^t),x^t-x^*\rangle + \langle \nabla f(x^t), x^{t+1}-x^t\rangle + \frac
+    {\beta}{2}\|x^{t+1}-x^t\|^2 \\
+    &= \langle \nabla f(x^t),x^{t+1}-x^*\rangle + \frac{\beta}{2}\|x^{t+1}-x^t\|^2 \\
+    &\leq \frac{1}{\eta_t}\langle x^t-x^{t+1}, x^{t+1}-x^*\rangle + \frac{\beta}{2}\|x^{t+1}-x^t\|^2
+    \\
+    &=\frac{1}{\eta_t}\langle x^t-x^{t+1},x^t-x^*\rangle + \left(\frac{\beta}{2} - \frac{1}
+    {\eta_t}\right)\|x^{t+1}-x^t\|^2
+   \end{aligned}
+\]
+In particular, if we still choose the step size $\eta_t=1/\beta$ as in the unconstrained case, we
+get
+\begin{equation}
+\begin{aligned}
+  f(x^{t+1})-f(x^*)
+  &\leq \langle \beta(x^t-x^{t+1}), x^t-x^*\rangle - \frac{\beta}{2}\|x^ {t+1}-x^t\|^2 \\
+  &= \langle g_\sX(x^t), x^t-x^*\rangle - \frac{1}{2\beta}\|g_\sX(x^t)\|^2
+  \label{eq:constrained-beta-smooth-3-point}
+\end{aligned}
+\end{equation}
+where we have defined the quantity
+\begin{equation}
+  g_\sX(x^t) = \beta(x^t-x^{t+1})
+\end{equation}
+Note in the unconstrained case, $\beta (x^t-x^{t+1})=\nabla f(x^t)$, and its norm characterized our
+bounds. It turns out that in the constrained case, this quantity plays the same role. Actually, the
+derivation above does not use the optimality of $x^*$, so replacing $x^*$ with any $y\in\sX$, we get
+the following lemma.
+
+\begin{lemma}[Three-point Inequality]
+Let $x,y\in\sX$ and $x^+=\Pi_\sX\left(x-\frac{1}{\beta}\nabla f(x)\right)$, and $g_\sX(x)=\beta
+(x-x^+)$. Then
+\begin{equation}
+  f(x^+)-f(y) \leq \langle g_\sX(x), x-y\rangle - \frac{1}{2\beta}\|g_\sX(x)\|^2
+\end{equation}
+\end{lemma}
+
+By plugging in $x=x^t$, $y=x^*$, we immediately get the upper bound
+\begin{equation}
+  \Delta_{t+1} = f(x^{t+1})-f(x^*) \leq \langle g_\sX(x^t),x^t-x^*\rangle
+  \leq \|g_\sX(x^t)\|\|x^t-x^*\|
+\end{equation}
+Similarly, plugging in $x=y=x^t$, we get the lower bound
+\begin{equation}
+\Delta_t - \Delta_{t+1} = f(x^t)-f(x^{t+1}) \geq \frac{1}{2\beta}\|g_\sX(x^t)\|^2
+\end{equation}
+The two inequalities are now linked by $\|g_\sX(x^t)\|$, combing them, we get
+\[
+  \Delta_t - \Delta_{t+1} \geq \frac{1}{2\beta} \frac{\Delta_{t+1}^2}{\|x^t-x^*\|^2}
+  \geq \frac{\Delta_{t+1}^2}{2\beta R^2}
+\]
+where again we let $R=\max_{1\leq t\leq T}\|x^t-x^*\|$.
+
 
 %\bibliographystyle{alpha}
 %\bibliography{bibfile}
