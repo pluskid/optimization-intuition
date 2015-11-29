@@ -20,6 +20,9 @@
 \usepackage{tikz}
 \usepackage{pgfplots}
 
+\usepackage[]{natbib}
+\bibliographystyle{chicago}
+
 %=================================
 % pre-defined theorem environments
 \usepackage{amsthm}
@@ -90,12 +93,36 @@ secondextra={
 \usepackage{charter}
 \usepackage[scaled=0.95]{inconsolata}
 
-\title{Intuitions for Optimization}
+\title{Intuitions for Convex Optimization}
 \author{pluskid}
 
 \begin{document}
 \maketitle
 \tableofcontents
+
+\section*{Preface}
+Originally I wanted to write down some notes of the intuitions I developed when trying to
+understand various optimization algorithms. Gradually I realized it becomes very difficult to
+organize the contents in a coherent way. Since \citet {MAL-050} is an excellent book (and the main
+reference here) that already includes most of the topics that I wanted to cover in this notes. I
+decided to follow the organization in that book and fill in my thoughts and notes accordingly. The
+original book is available at \href{http://www.princeton.edu/~sbubeck/}{S{\'e}bastien Bubeck's
+homepage}.
+
+\section{Introduction}
+\section{Convex optimization in finite dimension}
+\section{Dimension-free convex optimization}
+\subsection{Projected subgradient descent for Lipschitz functions}
+\subsection{Gradient descent for smooth functions}
+\subsection{Conditional gradient descent, aka Frank-Wolfe}
+\subsection{Strong convexity}
+\subsection{Lower bounds}
+\subsection{Geometric descent}
+\subsection{Nesterov's accelerated gradient descent}
+
+\section{Almost dimension-free convex optimization in non-Euclidean spaces}
+\section{Beyond the black-box model}
+\section{Convex optimization and randomness}
 
 \section{Projected Subgradient Descent for Convex Lipschitz Functions}
 
@@ -107,7 +134,7 @@ secondextra={
   \begin{equation}
     \sX \subset \sB_2(0; R)
   \end{equation}
-  and $f$ is convex and $L$-Lipschitz on $\sX$:
+  and $f$ is convex and $G$-Lipschitz on $\sX$:
   \begin{equation}
     |f(x)-f(y)| \leq G\|x-y\|_2, \quad x,y\in\sX
   \end{equation}
@@ -716,7 +743,6 @@ The two inequalities are now linked by $\|g_\sX(x^t)\|$, combing them, we get
 where again we let $R=\max_{1\leq t\leq T}\|x^t-x^*\|$.
 
 
-%\bibliographystyle{alpha}
-%\bibliography{bibfile}
+\bibliography{references}
 
 \end{document}
