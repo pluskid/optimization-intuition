@@ -112,6 +112,43 @@ homepage}.
 \section{Introduction}
 \section{Convex optimization in finite dimension}
 \section{Dimension-free convex optimization}
+In this chapter, we study the basic gradient descent algorithm and its variants. This algorithm only
+requires a first-order oracle that evaluates the gradient (or subgradient) at a given point. The
+convergence rate can be characterized in the number of oracle calls, which is remarkably independent
+of the input dimension\footnote{Although as also noted in the book, the computational complexity
+remains at least linear in the dimension since we need to manipulate the gradient vector. Moreover,
+the constants (Lipschitz constant or radius of the feasible parameters) usually depend on the
+dimension when we consider specific problems in, machine learning, for example.}. In many cases,
+evaluating the first order oracle involves only the same computational complexity as evaluating the
+function itself (e.g. the loss function for learning a structured SVM).
+
+\begin{remark}[Lemma 3.1]
+This lemma will be useful when we consider constrained optimization where a projection is usually
+used in each iteration to make sure the parameters remain feasible. In particular, this lemma shows
+that projection onto a convex set $\sX$ is a \emph{contraction}:
+\begin{equation}
+  \|\Pi_\sX(x)-\Pi_\sX(x')\| \leq \|x-x'\|
+\end{equation}
+The inequality can be easily shown by applying Lemma 3.1:
+\[
+  \begin{aligned}
+  \|x-x'\|^2
+  &= \|x-\Pi_\sX(x) + \Pi_\sX(x)-\Pi_\sX(x') + \Pi_\sX(x') - x'\|^2 \\
+  &= \|\Pi_\sX(x)-\Pi_\sX(x')\|^2 + \|x-\Pi_\sX(x)\|^2 + \|x'-\Pi_\sX(x')\|^2 \\
+  &\mathrel{\phantom{=}}
+     + 2\langle x-\Pi_\sX(x), \Pi_\sX(x)-\Pi_\sX(x')\rangle
+     + 2\langle \Pi_\sX(x)-\Pi_\sX(x'), \Pi_\sX(x')-x'\rangle \\
+  &\mathrel{\phantom{=}}
+     + 2\langle x-\Pi_\sX(x), \Pi_\sX(x')-x'\rangle \\
+  &\geq \|\Pi_\sX(x)-\Pi_\sX(x')\|^2 + \|x-\Pi_\sX(x)\|^2 + \|x'-\Pi_\sX(x')\|^2 \\
+  &\mathrel{\phantom{=}}
+     + 2\langle x-\Pi_\sX(x), \Pi_\sX(x')-x'\rangle \\
+  &= \|\Pi_\sX(x)-\Pi_\sX(x')\|^2 + \|(x-\Pi_\sX(x)) + (\Pi_\sX(x')-x')\|^2 \\
+  &\geq \|\Pi_\sX(x)-\Pi_\sX(x')\|^2
+  \end{aligned}
+\]
+\end{remark}
+
 \subsection{Projected subgradient descent for Lipschitz functions}
 \subsection{Gradient descent for smooth functions}
 \subsection{Conditional gradient descent, aka Frank-Wolfe}
